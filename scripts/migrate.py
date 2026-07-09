@@ -3,8 +3,8 @@ from pymongo import MongoClient
 from datetime import datetime
 
 def migrer_donnees():
-    # Connexion à MongoDB en utilisant le nom du service Docker 'mongodb' au lieu de localhost
-    print("🔌 Connexion à la base de données MongoDB à l'intérieur du réseau Docker...")
+    # Connexion à MongoDB
+    print(" Connexion à la base de données MongoDB à l'intérieur du réseau Docker...")
     client = MongoClient("mongodb://mongodb:27017/")
     
     db = client["healthcare_db"]
@@ -14,17 +14,17 @@ def migrer_donnees():
     collection.delete_many({})
     
     # Lecture du fichier CSV
-    print("📖 Lecture du fichier CSV source...")
+    print(" Lecture du fichier CSV source...")
     chemin_csv = "data/healthcare_dataset.csv"
     df = pd.read_csv(chemin_csv)
     
     # Nettoyage : Suppression des doublons
-    print(f"🧹 Suppression des doublons stricts (Volumétrie initiale : {len(df)} lignes)...")
+    print(f" Suppression des doublons stricts (Volumétrie initiale : {len(df)} lignes)...")
     df = df.drop_duplicates()
-    print(f"✨ Après nettoyage : {len(df)} lignes prêtes à être migrées.")
+    print(f" Après nettoyage : {len(df)} lignes prêtes à être migrées.")
     
     # Transformation et Structuration NoSQL
-    print("🏗️ Structuration des données et conversion des types...")
+    print(" Structuration des données et conversion des types...")
     liste_documents = []
     
     for idx, row in df.iterrows():
@@ -59,11 +59,11 @@ def migrer_donnees():
         liste_documents.append(document)
         
     # Insertion en masse
-    print(f"🚀 Insertion de {len(liste_documents)} documents dans MongoDB...")
+    print(f" Insertion de {len(liste_documents)} documents dans MongoDB...")
     resultat = collection.insert_many(liste_documents)
     
     print("\n==================================================")
-    print("✅ MIGRATION RÉUSSIE DEPUIS DOCKER ! 🎉")
+    print("✅ MIGRATION RÉUSSIE DEPUIS DOCKER !")
     print(f"• Nombre de documents insérés : {len(resultat.inserted_ids)}")
     print("==================================================")
     

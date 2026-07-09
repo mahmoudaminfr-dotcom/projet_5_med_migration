@@ -7,7 +7,7 @@ def creer_index():
     db = client["healthcare_db"]
     collection = db["admissions"]
     
-    print("⚡ Création des index stratégiques...")
+    print(" Création des index stratégiques...")
     
     # 1. Index sur le nom du patient (Recherches fréquentes)
     nom_index = collection.create_index([("patient_info.name", ASCENDING)])
@@ -22,11 +22,11 @@ def creer_index():
     print(f"✅ Index créé avec succès sur la date d'admission : {date_index}")
     
     print("\n==================================================")
-    print("🚀 TOUS LES INDEX ONT ÉTÉ APPLIQUÉS AVEC SUCCÈS ! 🎉")
+    print("TOUS LES INDEX ONT ÉTÉ APPLIQUÉS AVEC SUCCÈS ! ")
     print("==================================================")
     
     # Affichage de la liste finale pour vérification
-    print("\n📋 Liste des index actuellement actifs sur la collection :")
+    print("\n Liste des index actuellement actifs sur la collection :")
     for index in collection.list_indexes():
         print(f" • {index['name']} -> Champs : {index['key'].keys()}")
         
