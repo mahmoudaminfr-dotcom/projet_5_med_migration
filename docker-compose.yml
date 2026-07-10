@@ -1,27 +1,34 @@
+
 services:
-  # Base de données MongoDB
+  migration_script:
+    build: .
+    container_name: med_migration_container
+    networks:
+      - med_network
+    depends_on:
+      - mongodb
+    environment:
+      - MONGO_USER=${MONGO_ROOT_USER}
+      - MONGO_PASS=${MONGO_ROOT_PASS}
+      - MONGO_HOST=mongodb
+
   mongodb:
     image: mongo:latest
     container_name: med_mongo_container
     ports:
       - "27017:27017"
+    networks:
+      - med_network
+    command: mongod --auth
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_ROOT_USER}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_ROOT_PASS}
     volumes:
       - mongo_data:/data/db
-    networks:
-      - med_network
-
-  # Script Python d'automatisation de la migration
-  migration_script:
-    build: .
-    container_name: med_migration_container
-    depends_on:
-      - mongodb
-    networks:
-      - med_network
-
-volumes:
-  mongo_data:
 
 networks:
   med_network:
     driver: bridge
+
+volumes:
+  mongo_data:

@@ -6,3 +6,4 @@ __pycache__/
 # Données volumineuses ou locales
 data/
 schema.drawio
+.env

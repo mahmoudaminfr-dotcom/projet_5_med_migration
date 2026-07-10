@@ -1,11 +1,20 @@
+import os
 import pandas as pd
 from pymongo import MongoClient
 from datetime import datetime
 
 def migrer_donnees():
-    # Connexion à MongoDB
-    print(" Connexion à la base de données MongoDB à l'intérieur du réseau Docker...")
-    client = MongoClient("mongodb://mongodb:27017/")
+    # 1. Récupération sécurisée des identifiants injectés par Docker
+    mongo_user = os.getenv("MONGO_USER", "admin_engineer")
+    mongo_pass = os.getenv("MONGO_PASS", "SecureMedPassword2026")
+    mongo_host = os.getenv("MONGO_HOST", "mongodb")
+    
+    # 2. Construction de l'URI d'authentification sécurisée
+    # Format standard : mongodb://user:password@host:port/
+    mongo_uri = f"mongodb://{mongo_user}:{mongo_pass}@{mongo_host}:27017/"
+    
+    print(" Connexion sécurisée à la base de données MongoDB à l'intérieur du réseau Docker...")
+    client = MongoClient(mongo_uri)
     
     db = client["healthcare_db"]
     collection = db["admissions"]
