@@ -3,10 +3,6 @@ import sys
 import unittest
 from pathlib import Path
 from pymongo import MongoClient
-from dotenv import load_dotenv
-
-chemin_env = Path(__file__).resolve().parent / ".env"
-load_dotenv(dotenv_path=chemin_env, override=True)
 
 class TestHealthcareMigration(unittest.TestCase):
 
@@ -15,11 +11,7 @@ class TestHealthcareMigration(unittest.TestCase):
         print("\n⚡ Initialisation des tests de validation de données...")
         cls.mongo_user = os.getenv("MONGO_USER", "admin_engineer")
         cls.mongo_pass = os.getenv("MONGO_PASS")
-        
-        cls.mongo_host = os.getenv("MONGO_HOST", "mongodb")
-        if cls.mongo_host == "mongodb":
-            cls.mongo_host = "127.0.0.1"
-            
+        cls.mongo_host = os.getenv("MONGO_HOST", "mongodb_container") # Utilisation du service réseau Docker
         cls.mongo_port = int(os.getenv("MONGO_PORT", 27017))
         
         if not cls.mongo_pass:

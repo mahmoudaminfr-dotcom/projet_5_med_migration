@@ -3,24 +3,14 @@ import sys
 import pprint
 from pathlib import Path
 from pymongo import MongoClient
-from dotenv import load_dotenv
-
-# 1. Chargement sécurisé du fichier .env
-chemin_racine = Path(__file__).resolve().parent.parent
-chemin_env = chemin_racine / ".env"
-load_dotenv(dotenv_path=chemin_env, override=True)
 
 def verifier_base():
     print("🔌 Connexion sécurisée à MongoDB pour contrôle qualité...")
     
+    # Extraction des variables directement injectées par Docker
     mongo_user = os.getenv("MONGO_USER", "admin_engineer")
     mongo_pass = os.getenv("MONGO_PASS")
-    
-    # Résolution Windows : Utilisation stricte de l'IP IPv4 127.0.0.1
-    mongo_host = os.getenv("MONGO_HOST", "mongodb")
-    if mongo_host == "mongodb":
-        mongo_host = "127.0.0.1"
-        
+    mongo_host = os.getenv("MONGO_HOST", "mongodb_container") # Utilisation du service réseau Docker
     mongo_port = int(os.getenv("MONGO_PORT", 27017))
     
     if not mongo_pass:

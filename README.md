@@ -1,73 +1,75 @@
 # 🏥 Projet de Migration NoSQL - Healthcare Database
 
-Ce projet implémente un pipeline d'ingestion et de migration de données (ETL) pour structurer et transférer des données de santé depuis un fichier CSV vers une base de données MongoDB sécurisée. 
+Ce projet implémente un pipeline d'ingestion et de migration de données (ETL) entièrement automatisé. Il structure, dédoublonne et transfère des données de santé depuis un fichier CSV source vers une base de données MongoDB sécurisée.
 
-L'architecture est entièrement conteneurisée avec Docker et respecte les meilleures pratiques de sécurité industrielle (principe du moindre privilège et gestion stricte des secrets).
-
----
-
-## 🛡️ Sécurité & Gestion des Privilèges
-
-Afin de respecter les standards de sécurité, aucune information d'authentification n'est stockée en dur dans le code ou les fichiers de configuration partagés.
-
-1. **Compte Administrateur (Root) :** Utilisé uniquement par Docker au démarrage pour l'initialisation du serveur MongoDB.
-2. **Compte Applicatif (`admin_engineer`) :** Utilisé par les scripts Python. Ce compte dispose uniquement du rôle restreint `readWrite` sur la base de données `healthcare_db`, limitant ainsi la portée en cas de compromission.
-3. **Fichier d'environnement (`.env`) :** Utilisé en local pour charger de manière sécurisée les identifiants en mémoire lors de l'exécution. Ce fichier est ignoré par Git.
+L'architecture est 100% conteneurisée avec Docker. **Aucune installation de Python ni aucune exécution de commande Python manuelle n'est requise.**
 
 ---
 
-## 🚀 Installation et Lancement
+## 🚀 Guide de Validation Rapide (Plug & Play)
 
 ### 1. Prérequis
-Assurez-vous d'avoir installé sur votre machine :
-* [Docker & Docker Compose](https://www.docker.com/)
-* [Python 3.10+](https://www.python.org/)
+Assurez-vous d'avoir démarré l'application **Docker** sur votre machine.
 
-### 2. Configuration de l'environnement
-Clonez le projet, puis créez un fichier `.env` à la racine en copiant le modèle fourni :
-```bash
-cp .env.example .env
+### 2. Configuration du fichier d'environnement (.env)
 
+Pour des raisons de sécurité, les identifiants et mots de passe ne sont pas fournis. Vous devez créer votre propre fichier `.env` à partir du modèle.
 
-Ouvrez le fichier .env nouvellement créé et définissez vos propres identifiants sécurisés :
+1. À la racine du projet, dupliquez le modèle :
+   ```bash
+   cp .env.example .env
 
-# Identifiants du Super Administrateur (Root) - Uniquement pour l'initialisation
-MONGO_INITDB_ROOT_USERNAME=votre_root_admin
-MONGO_INITDB_ROOT_PASSWORD=votre_mot_de_passe_root_ultra_secret
+Ouvrez le fichier .env fraîchement créé et complétez les champs vides avec vos propres valeurs :
 
-# Identifiants de l'utilisateur applicatif restreint
-MONGO_USER=admin_engineer
-MONGO_PASS=votre_mot_de_passe_applicatif_securise
-MONGO_HOST=mongodb
-MONGO_PORT=27017
+MONGO_INITDB_ROOT_PASSWORD : Définissez le mot de passe de votre choix pour le compte Root de la base.
 
-3. Démarrage de la Base de Données
-Lancez le service MongoDB sécurisé en arrière-plan :
+MONGO_PASS : Définissez le mot de passe de votre choix pour l'utilisateur applicatif restreint (admin_engineer).
 
-docker compose up -d mongodb
+(Note : Les variables MONGO_INITDB_ROOT_USERNAME, MONGO_USER, MONGO_HOST et MONGO_PORT sont déjà pré-remplies dans le modèle avec les valeurs requises pour le bon fonctionnement du réseau Docker. Vous n'avez pas besoin de les modifier).
 
-4. Exécution de la Migration (ETL)
-Lancez le script de migration des données à l'intérieur du réseau Docker isolé :
+3. Lancement de l'Automatisation
+Lancez l'ensemble du pipeline (initialisation de la base, sécurité, traitement et tests) avec la commande suivante dans votre terminal :
 
-docker compose run --rm migration_script
+docker compose up --build
 
-Outils d'Exploitation et Tests
-Pour exécuter les scripts locaux d'exploitation ou de test, assurez-vous d'avoir installé les dépendances Python requises :
+Déroulement Automatique du Pipeline (CI/CD Local)
+Lorsque vous lancez cette commande, le conteneur applicatif prend le relais et exécute automatiquement un pipeline séquentiel strict. Chaque étape est conditionnée par la réussite de la précédente :
 
-pip install -r requirements.txt
+[1. Migration] ──(Succès)──> [2. Indexation] ──(Succès)──> [3. Vérification] ──(Succès)──> [4. Tests Unitaires]
 
-Optimisation (Création des Index)
-Pour appliquer les index de performance sur la collection MongoDB :
+Migration (scripts/migrate.py) : Connexion à MongoDB, extraction des données du fichier CSV, nettoyage des structures, conversion des types (ex: chaînes en entiers/floats), formatage au modèle cible NoSQL, dédoublonnage et injection des 54 966 documents uniques.
 
-python create_indexes.py
+Indexation (scripts/create_indexes.py) : Création automatique des index stratégiques (sur le nom du patient, l'hôpital et la date d'admission) pour garantir des performances de requêtage optimales en production.
 
-Vérification de la Base (Exploration)
-Pour obtenir un rapport visuel rapide de la volumétrie et voir un exemple de document migré:
+Contrôle Qualité (scripts/verify_migration.py) : Vérification immédiate de la volumétrie en base (validation du compte cible de 54 966 documents) et affichage d'un document témoin structuré directement dans vos logs de terminal.
 
-python verify_migration.py
+Validation Unitaire (scripts/test_migration.py) : Exécution d'une suite complète de tests unittest (vérification des privilèges de l'utilisateur restreint, intégrité des types de données injectés, et validation de l'absence totale de doublons stricts). Le conteneur s'arrête ensuite proprement (Exit 0).
 
-Validation Qualité (Tests Automatisés)
-Pour exécuter la suite de tests d'intégration et valider l'authentification, les types de données, les contraintes de champs obligatoires et l'absence de doublons :
+Ce qui est exécuté automatiquement :
 
-python -m unittest test_migration.py
+Le conteneur MongoDB démarre et applique la configuration de sécurité Root que vous avez définie.
+
+Le script init-mongo.js s'exécute pour créer l'utilisateur applicatif restreint (admin_engineer) avec son mot de passe personnalisé.
+
+Le conteneur Python s'assemble, attend que la base soit prête, puis exécute la migration.
+
+Résultat dans les logs : Vous verrez le script nettoyer les données et confirmer l'insertion de 54 966 documents uniques. Le conteneur de script s'arrête ensuite proprement (code 0).
+
+🔍 Vérification visuelle (MongoDB Compass)
+Le conteneur de la base de données reste actif pour vous permettre d'inspecter le résultat.
+
+Ouvrez MongoDB Compass.
+
+Connectez-vous en utilisant une chaîne de connexion (URI) construite avec le mot de passe applicatif que vous avez choisi dans votre .env :
+
+mongodb://admin_engineer:<VOTRE_MONGO_PASS>@localhost:27017/healthcare_db?authSource=healthcare_db
+
+Vous pourrez explorer la base healthcare_db, sa collection admissions et vérifier la bonne structure des données transférées.
+
+Arrêt et Nettoyage
+Pour éteindre les services et libérer les ressources de votre machine, faites Ctrl + C dans votre terminal, puis saisissez :
+
+docker compose down
+
+(Si vous souhaitez supprimer les volumes pour tester une nouvelle installation à blanc : docker compose down -v)
 

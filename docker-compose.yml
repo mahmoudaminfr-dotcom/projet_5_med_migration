@@ -1,38 +1,40 @@
-version: '3.8'
-
 services:
   mongodb:
     image: mongo:latest
     container_name: mongodb_container
-    # On active l'authentification obligatoire sur MongoDB
-    command: mongod --auth
-    environment:
-      # Utilisés par l'image officielle pour créer le compte super-admin au premier démarrage
-      - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
-      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
-      # Transmis au conteneur pour que notre script init-mongo.js les lise de façon dynamique
-      - MONGO_USER=${MONGO_USER}
-      - MONGO_PASS=${MONGO_PASS}
-    volumes:
-      - mongo_data:/data/db
-      # On injecte le script de création de l'utilisateur restreint au démarrage
-      - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
     ports:
       - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      # ICI : On transmet explicitement les variables pour le fichier init-mongo.js
+      MONGO_USER: ${MONGO_USER}
+      MONGO_PASS: ${MONGO_PASS}
+    volumes:
+      - mongo_data:/data/db
+      - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+    networks:
+      - healthcare_network
+    command: mongod --auth
 
   migration_script:
     build: .
     container_name: migration_container
-    depends_on:
-      - mongodb
     environment:
-      # On injecte les identifiants restreints de l'ingénieur dans le script Python de migration
       - MONGO_USER=${MONGO_USER}
       - MONGO_PASS=${MONGO_PASS}
       - MONGO_HOST=${MONGO_HOST}
       - MONGO_PORT=${MONGO_PORT}
+    depends_on:
+      - mongodb
     volumes:
       - ./data:/app/data
+    networks:
+      - healthcare_network
 
 volumes:
   mongo_data:
+
+networks:
+  healthcare_network:
+    driver: bridge
