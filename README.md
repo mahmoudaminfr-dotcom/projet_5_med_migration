@@ -16,7 +16,7 @@ Assurez-vous d'avoir démarré l'application **Docker** sur votre machine.
 Pour des raisons de sécurité, les identifiants et mots de passe ne sont pas fournis. Vous devez créer votre propre fichier `.env` à partir du modèle.
 
 1. À la racine du projet, dupliquez le modèle :
-   ```bash
+
    cp .env.example .env
 
 Ouvrez le fichier .env fraîchement créé et complétez les champs vides avec vos propres valeurs :
@@ -43,7 +43,7 @@ Indexation (scripts/create_indexes.py) : Création automatique des index straté
 
 Contrôle Qualité (scripts/verify_migration.py) : Vérification immédiate de la volumétrie en base (validation du compte cible de 54 966 documents) et affichage d'un document témoin structuré directement dans vos logs de terminal.
 
-Validation Unitaire (scripts/test_migration.py) : Exécution d'une suite complète de tests unittest (vérification des privilèges de l'utilisateur restreint, intégrité des types de données injectés, et validation de l'absence totale de doublons stricts). Le conteneur s'arrête ensuite proprement (Exit 0).
+Validation Unitaire (Dossier tests/) : Exécution d'une suite complète de tests via la commande `python -m unittest discover` configurée dans le Dockerfile (vérification des privilèges de l'utilisateur restreint, intégrité des types de données injectés, et validation de l'absence totale de doublons stricts). Le conteneur s'arrête ensuite proprement (Exit 0).
 
 Ce qui est exécuté automatiquement :
 

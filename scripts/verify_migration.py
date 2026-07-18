@@ -34,7 +34,9 @@ def verifier_base():
         if nb_documents == 54966:
             print("✅ Le compte est bon ! Aucun document n'a été perdu (54 966 uniques attendus).")
         else:
-            print(f"⚠️ Écart détecté ! Attendu: 54966 | Présent en base: {nb_documents}")
+            print(f"❌ ÉCRITIQUE : Écart détecté ! Attendu: 54966 | Présent en base: {nb_documents}")
+            client.close()
+            sys.exit(1) # Fait échouer le conteneur si le compte est faux
             
         # 2. Récupérer et afficher un document exemple
         print("\n📝 Aperçu d'un document structuré en base :")
@@ -44,10 +46,13 @@ def verifier_base():
         if exemple:
             pprint.pprint(exemple)
         else:
-            print("❌ Aucun document trouvé dans la collection.")
+            print("❌ ÉCRITIQUE : Aucun document trouvé dans la collection alors que le compte était bon.")
+            client.close()
+            sys.exit(1) # Fait échouer le conteneur si aucun document n'est lisible
             
         print("==================================================")
         client.close()
+        sys.exit(0) # Tout est parfait, on quitte proprement
         
     except Exception as e:
         print(f"❌ Erreur lors de la vérification : {e}")
