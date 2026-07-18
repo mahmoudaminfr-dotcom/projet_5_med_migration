@@ -10,4 +10,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Lancement 100% automatique du pipeline complet (Migration -> Indexation -> Vérification -> Tests)
-CMD ["sh", "-c", "python scripts/create_indexes.py && python scripts/verify_migration.py && python test_migration.py"]
+CMD ["sh", "-c", "python scripts/migrate.py && python scripts/create_indexes.py && python scripts/verify_migration.py && python -m unittest discover -s tests"]
