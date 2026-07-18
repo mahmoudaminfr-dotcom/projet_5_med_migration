@@ -43,7 +43,7 @@ Indexation (scripts/create_indexes.py) : Création automatique des index straté
 
 Contrôle Qualité (scripts/verify_migration.py) : Vérification immédiate de la volumétrie en base (validation du compte cible de 54 966 documents) et affichage d'un document témoin structuré directement dans vos logs de terminal.
 
-Validation Unitaire (Dossier tests/) : Exécution d'une suite complète de tests via la commande `python -m unittest discover` configurée dans le Dockerfile (vérification des privilèges de l'utilisateur restreint, intégrité des types de données injectés, et validation de l'absence totale de doublons stricts). Le conteneur s'arrête ensuite proprement (Exit 0).
+Validation Unitaire (`test_migration.py`) : Exécution automatique de la suite complète de tests unitaires située à la racine du projet via la commande `python -m unittest discover` configurée dans le Dockerfile...
 
 Ce qui est exécuté automatiquement :
 
